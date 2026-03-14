@@ -1,0 +1,53 @@
+<%- include('../partials/header', { title: 'Manage Orders' }) %>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-brand"><i class="fas fa-shield-alt"></i> Admin Panel</div>
+    <nav class="admin-nav">
+      <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="/admin/products"><i class="fas fa-box"></i> Products</a>
+      <a href="/admin/orders" class="active"><i class="fas fa-receipt"></i> Orders</a>
+      <a href="/products/admin/new"><i class="fas fa-plus"></i> Add Product</a>
+      <a href="/"><i class="fas fa-store"></i> View Store</a>
+    </nav>
+  </aside>
+  <div class="admin-content">
+    <h1>All Orders <span style="font-size:1rem;font-weight:400;color:var(--text-light)">(<%= orders.length %>)</span></h1>
+    <div class="admin-section">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Order #</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Payment</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            <% orders.forEach(order => { %>
+              <tr>
+                <td><code>#<%= order._id.toString().slice(-6).toUpperCase() %></code></td>
+                <td><%= order.user?.name || 'Guest' %><br/><small style="color:var(--text-light)"><%= order.user?.email || '' %></small></td>
+                <td><%= order.items.length %></td>
+                <td><strong>Rs. <%= order.totalAmount.toLocaleString() %></strong></td>
+                <td>
+                  <form action="/admin/orders/<%= order._id %>/status" method="POST" class="status-form">
+                    <select name="status" onchange="this.form.submit()">
+                      <% ['Pending','Processing','Shipped','Delivered','Cancelled'].forEach(s => { %>
+                        <option value="<%= s %>" <%= order.status===s?'selected':'' %>><%= s %></option>
+                      <% }) %>
+                    </select>
+                </td>
+                <td>
+                    <select name="paymentStatus" onchange="this.form.submit()">
+                      <% ['Unpaid','Paid','Refunded'].forEach(s => { %>
+                        <option value="<%= s %>" <%= order.paymentStatus===s?'selected':'' %>><%= s %></option>
+                      <% }) %>
+                    </select>
+                  </form>
+                </td>
+                <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                <td><a href="/orders/<%= order._id %>" class="btn-outline btn-sm">View</a></td>
+              </tr>
+            <% }) %>
+            <% if (!orders.length) { %><tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-light)">No orders yet</td></tr><% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

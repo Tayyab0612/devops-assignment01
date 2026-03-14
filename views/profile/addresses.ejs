@@ -1,0 +1,78 @@
+<%- include('../partials/header', { title: 'Saved Addresses' }) %>
+<div class="container" style="max-width:900px;padding-top:2rem">
+  <div class="profile-layout">
+    <aside class="profile-sidebar">
+      <div class="profile-avatar">
+        <% if (user.avatar) { %><img src="<%= user.avatar %>" alt="<%= user.name %>"/>
+        <% } else { %><div class="avatar-initials"><%= user.name.charAt(0).toUpperCase() %></div><% } %>
+        <h3><%= user.name %></h3><p><%= user.email %></p>
+      </div>
+      <nav class="profile-nav">
+        <a href="/profile"><i class="fas fa-user"></i> Profile</a>
+        <a href="/profile/addresses" class="active"><i class="fas fa-map-marker-alt"></i> Addresses</a>
+        <a href="/profile/orders"><i class="fas fa-box"></i> Orders</a>
+        <a href="/orders"><i class="fas fa-receipt"></i> Order History</a>
+      </nav>
+    </aside>
+
+    <div class="profile-content">
+      <div class="profile-card">
+        <h2><i class="fas fa-map-marker-alt"></i> Saved Addresses</h2>
+        <% if (!user.savedAddresses.length) { %>
+          <p style="color:var(--text-light);padding:1rem 0">No saved addresses yet.</p>
+        <% } else { %>
+          <div class="addresses-grid">
+            <% user.savedAddresses.forEach(addr => { %>
+              <div class="address-card <%= addr.isDefault ? 'default' : '' %>">
+                <div class="address-header">
+                  <span class="address-label"><i class="fas fa-<%= addr.label==='Work'?'briefcase':'home' %>"></i> <%= addr.label %></span>
+                  <% if (addr.isDefault) { %><span class="default-badge">Default</span><% } %>
+                </div>
+                <p><%= addr.street %><br/><%= addr.city %>, <%= addr.state %> <%= addr.zip %><br/><%= addr.country %></p>
+                <div class="address-actions">
+                  <% if (!addr.isDefault) { %>
+                    <form action="/profile/addresses/default/<%= addr._id %>" method="POST" style="display:inline">
+                      <button type="submit" class="btn-outline btn-sm">Set Default</button>
+                    </form>
+                  <% } %>
+                  <form action="/profile/addresses/delete/<%= addr._id %>" method="POST" style="display:inline" onsubmit="return confirm('Remove address?')">
+                    <button type="submit" class="btn-danger btn-sm">Remove</button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+
+        <hr style="margin:1.5rem 0"/>
+        <h3>Add New Address</h3>
+        <form action="/profile/addresses/add" method="POST" class="profile-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Label</label>
+              <select name="label">
+                <option>Home</option><option>Work</option><option>Other</option>
+              </select>
+            </div>
+            <div class="form-group" style="align-items:center;padding-top:1.8rem">
+              <label style="display:flex;gap:.5rem;cursor:pointer">
+                <input type="checkbox" name="isDefault"/> Set as default
+              </label>
+            </div>
+          </div>
+          <div class="form-group"><label>Street Address</label><input type="text" name="street" placeholder="Street / Area" required/></div>
+          <div class="form-row">
+            <div class="form-group"><label>City</label><input type="text" name="city" placeholder="Lahore" required/></div>
+            <div class="form-group"><label>State / Province</label><input type="text" name="state" placeholder="Punjab" required/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Postal Code</label><input type="text" name="zip" placeholder="54000"/></div>
+            <div class="form-group"><label>Country</label><input type="text" name="country" value="Pakistan"/></div>
+          </div>
+          <button type="submit" class="btn-primary">Save Address</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

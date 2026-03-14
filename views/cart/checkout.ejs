@@ -1,0 +1,115 @@
+<%- include('../partials/header', { title: 'Checkout' }) %>
+<div class="container">
+  <h1 class="page-title"><i class="fas fa-credit-card"></i> Checkout</h1>
+  <div class="checkout-layout">
+    <div class="checkout-form-section">
+      <form action="/cart/checkout" method="POST" id="checkoutForm">
+        <!-- Shipping -->
+        <div class="form-section">
+          <h3><i class="fas fa-map-marker-alt"></i> Shipping Address</h3>
+          <% if (user.savedAddresses && user.savedAddresses.length) { %>
+            <div class="form-group">
+              <label>Use Saved Address</label>
+              <select id="savedAddrSelect" onchange="fillAddress(this)">
+                <option value="">— Enter manually —</option>
+                <% user.savedAddresses.forEach((addr, i) => { %>
+                  <option value="<%= i %>" data-street="<%= addr.street %>" data-city="<%= addr.city %>" data-state="<%= addr.state %>" data-zip="<%= addr.zip %>" data-country="<%= addr.country %>">
+                    <%= addr.label %>: <%= addr.city %>, <%= addr.state %> <%= addr.isDefault ? '(Default)' : '' %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+          <% } %>
+          <div class="form-group"><label>Street Address</label><input type="text" name="street" id="f_street" placeholder="Street / Area / House No." required value="<%= user.address?.street || '' %>"/></div>
+          <div class="form-row">
+            <div class="form-group"><label>City</label><input type="text" name="city" id="f_city" placeholder="Lahore" required value="<%= user.address?.city || '' %>"/></div>
+            <div class="form-group"><label>Province</label><input type="text" name="state" id="f_state" placeholder="Punjab" required value="<%= user.address?.state || '' %>"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Postal Code</label><input type="text" name="zip" id="f_zip" placeholder="54000" value="<%= user.address?.zip || '' %>"/></div>
+            <div class="form-group"><label>Country</label><input type="text" name="country" id="f_country" value="Pakistan"/></div>
+          </div>
+          <div class="form-group"><label>Mobile (for SMS updates)</label><input type="tel" name="phone" placeholder="03xx-xxxxxxx" value="<%= user.phone || '' %>"/></div>
+        </div>
+
+        <!-- Payment -->
+        <div class="form-section">
+          <h3><i class="fas fa-money-bill-wave"></i> Payment Method</h3>
+          <div class="payment-options">
+            <label class="payment-option" onclick="showPaymentFields('cod')">
+              <input type="radio" name="paymentMethod" value="Cash on Delivery" checked/>
+              <i class="fas fa-truck"></i> Cash on Delivery
+            </label>
+            <label class="payment-option jazzcash-option" onclick="showPaymentFields('jazzcash')">
+              <input type="radio" name="paymentMethod" value="JazzCash"/>
+              <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/9a/JazzCash_Logo.png/200px-JazzCash_Logo.png" alt="JazzCash" style="height:22px"/> JazzCash
+            </label>
+            <label class="payment-option easypaisa-option" onclick="showPaymentFields('easypaisa')">
+              <input type="radio" name="paymentMethod" value="Easypaisa"/>
+              <img src="https://upload.wikimedia.org/wikipedia/en/a/a8/Easypaisa_logo.png" alt="Easypaisa" style="height:22px"/> Easypaisa
+            </label>
+          </div>
+
+          <div id="jazzcash-fields" class="payment-fields" style="display:none">
+            <div class="payment-instruction">
+              <i class="fas fa-info-circle"></i>
+              Send payment to JazzCash number: <strong>0300-1234567</strong> (ShopZone Pakistan)<br/>
+              Enter your JazzCash number below after transfer.
+            </div>
+            <div class="form-group"><label>Your JazzCash Number</label><input type="tel" name="jazzCashNumber" placeholder="03xx-xxxxxxx"/></div>
+          </div>
+          <div id="easypaisa-fields" class="payment-fields" style="display:none">
+            <div class="payment-instruction">
+              <i class="fas fa-info-circle"></i>
+              Send payment to Easypaisa number: <strong>0333-9876543</strong> (ShopZone Pakistan)<br/>
+              Enter your Easypaisa number below after transfer.
+            </div>
+            <div class="form-group"><label>Your Easypaisa Number</label><input type="tel" name="easypaisaNumber" placeholder="03xx-xxxxxxx"/></div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-full btn-lg"><i class="fas fa-check-circle"></i> Place Order</button>
+      </form>
+    </div>
+
+    <div class="checkout-summary">
+      <h3>Order Summary</h3>
+      <% let total = 0; %>
+      <% cart.forEach(item => { %>
+        <% if (!item.product) return; %>
+        <% const sub = item.product.price * item.quantity; total += sub; %>
+        <div class="checkout-item">
+          <img src="<%= item.product.image %>" alt="<%= item.product.name %>" onerror="this.src='/images/placeholder.svg'"/>
+          <div><p><%= item.product.name %></p><small>Qty: <%= item.quantity %></small></div>
+          <span>Rs. <%= sub.toLocaleString() %></span>
+        </div>
+      <% }) %>
+      <div class="checkout-totals">
+        <div class="summary-line"><span>Subtotal</span><span>Rs. <%= total.toLocaleString() %></span></div>
+        <div class="summary-line"><span>Shipping</span><span><%= total >= 5000 ? 'FREE' : 'Rs. 299' %></span></div>
+        <div class="summary-line total"><span>Total</span><span>Rs. <%= (total + (total >= 5000 ? 0 : 299)).toLocaleString() %></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPaymentFields(method) {
+  document.getElementById('jazzcash-fields').style.display  = method==='jazzcash' ? 'block' : 'none';
+  document.getElementById('easypaisa-fields').style.display = method==='easypaisa' ? 'block' : 'none';
+  document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+function fillAddress(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt.value) return;
+  document.getElementById('f_street').value  = opt.dataset.street;
+  document.getElementById('f_city').value    = opt.dataset.city;
+  document.getElementById('f_state').value   = opt.dataset.state;
+  document.getElementById('f_zip').value     = opt.dataset.zip;
+  document.getElementById('f_country').value = opt.dataset.country;
+}
+// Set first option active on load
+document.querySelector('.payment-option').classList.add('active');
+</script>
+<%- include('../partials/footer') %>

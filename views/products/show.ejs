@@ -1,0 +1,188 @@
+<%- include('../partials/header', { title: product.name }) %>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a> <i class="fas fa-chevron-right"></i>
+    <a href="/products">Shop</a> <i class="fas fa-chevron-right"></i>
+    <a href="/products?category=<%= encodeURIComponent(product.category) %>"><%= product.category %></a> <i class="fas fa-chevron-right"></i>
+    <span><%= product.name %></span>
+  </div>
+
+  <div class="product-detail">
+    <!-- IMAGE GALLERY -->
+    <div class="product-detail-image">
+      <% const allImages = product.images && product.images.length ? [product.image, ...product.images] : [product.image]; %>
+      <img src="<%= allImages[0] %>" alt="<%= product.name %>" id="mainProductImg" onerror="this.src='/images/placeholder.svg'"/>
+      <% if (allImages.length > 1) { %>
+        <div class="image-thumbnails">
+          <% allImages.forEach((img, i) => { %>
+            <img src="<%= img %>" class="thumb <%= i===0?'active':'' %>" onclick="switchImage(this,'<%= img %>')" onerror="this.src='/images/placeholder.svg'"/>
+          <% }) %>
+        </div>
+      <% } %>
+      <% if (product.stock === 0) { %><div class="out-of-stock-overlay">Out of Stock</div><% } %>
+    </div>
+
+    <div class="product-detail-info">
+      <span class="product-category tag"><%= product.category %></span>
+      <% if (product.platform) { %>
+        <span class="platform-badge <%= product.platform==='PlayStation'?'ps':product.platform==='XBOX'?'xbox':'pc' %>" style="position:static;margin-left:.5rem">
+          <%= product.platform %>
+        </span>
+      <% } %>
+      <h1><%= product.name %></h1>
+      <div class="brand-info">by <strong><%= product.brand %></strong></div>
+
+      <div class="product-rating large">
+        <% for(let i=1;i<=5;i++) { %><i class="fas fa-star <%= i<=Math.round(product.rating)?'filled':'' %>"></i><% } %>
+        <span><%= parseFloat(product.rating).toFixed(1) %> (<%= product.numReviews %> reviews)</span>
+      </div>
+
+      <div class="product-price-large">Rs. <%= product.price.toLocaleString() %></div>
+
+      <div class="stock-info <%= product.stock>0?'in-stock':'no-stock' %>">
+        <i class="fas <%= product.stock>0?'fa-check-circle':'fa-times-circle' %>"></i>
+        <%= product.stock>0 ? `${product.stock} in stock` : 'Out of stock' %>
+      </div>
+
+      <p class="product-description"><%= product.description %></p>
+
+      <% if (product.tags && product.tags.length) { %>
+        <div class="product-tags">
+          <% product.tags.forEach(tag => { %><span class="tag">#<%= tag %></span><% }) %>
+        </div>
+      <% } %>
+
+      <% if (product.stock > 0) { %>
+        <form action="/cart/add/<%= product._id %>" method="POST" class="add-to-cart-form">
+          <div class="quantity-selector">
+            <label>Quantity:</label>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+              <input type="number" name="quantity" id="qty" value="1" min="1" max="<%= product.stock %>"/>
+              <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+          </div>
+          <% if (user) { %>
+            <button type="submit" class="btn-primary btn-lg btn-full"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+          <% } else { %>
+            <a href="/auth/login" class="btn-primary btn-lg btn-full"><i class="fas fa-sign-in-alt"></i> Login to Add to Cart</a>
+          <% } %>
+        </form>
+      <% } %>
+
+      <div class="product-meta">
+        <span><i class="fas fa-truck"></i> Free shipping over Rs. 5,000</span>
+        <span><i class="fas fa-undo"></i> 7-day return policy</span>
+        <span><i class="fas fa-shield-alt"></i> Secure checkout</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVIEWS SECTION -->
+  <section class="reviews-section">
+    <h2>Customer Reviews (<%= reviews.length %>)</h2>
+
+    <% if (reviews.length) { %>
+      <!-- Rating summary -->
+      <div class="rating-summary">
+        <div class="big-rating">
+          <span class="big-score"><%= parseFloat(product.rating).toFixed(1) %></span>
+          <div class="big-stars">
+            <% for(let i=1;i<=5;i++) { %><i class="fas fa-star <%= i<=Math.round(product.rating)?'filled':'' %>"></i><% } %>
+          </div>
+          <small><%= product.numReviews %> reviews</small>
+        </div>
+        <div class="rating-bars">
+          <% for(let star=5;star>=1;star--) { %>
+            <% const count = reviews.filter(r=>r.rating===star).length; %>
+            <% const pct = reviews.length ? Math.round(count/reviews.length*100) : 0; %>
+            <div class="rating-bar-row">
+              <span><%= star %> <i class="fas fa-star filled" style="font-size:.8rem"></i></span>
+              <div class="rating-bar"><div class="rating-bar-fill" style="width:<%= pct %>%"></div></div>
+              <span><%= count %></span>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="reviews-list">
+        <% reviews.forEach(review => { %>
+          <div class="review-card">
+            <div class="review-header">
+              <div class="review-avatar"><%= review.name.charAt(0).toUpperCase() %></div>
+              <div>
+                <strong><%= review.name %></strong>
+                <div class="review-stars">
+                  <% for(let i=1;i<=5;i++) { %><i class="fas fa-star <%= i<=review.rating?'filled':'' %>"></i><% } %>
+                </div>
+              </div>
+              <span class="review-date"><%= new Date(review.createdAt).toLocaleDateString('en-PK',{year:'numeric',month:'short',day:'numeric'}) %></span>
+              <% if (user && (user._id?.toString()===review.user?.toString() || user.role==='admin')) { %>
+                <form action="/products/<%= product._id %>/reviews/<%= review._id %>/delete" method="POST" style="margin-left:auto" onsubmit="return confirm('Delete review?')">
+                  <button type="submit" class="btn-danger btn-sm">Delete</button>
+                </form>
+              <% } %>
+            </div>
+            <p class="review-comment"><%= review.comment %></p>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p style="color:var(--text-light);padding:1rem 0">No reviews yet. Be the first to review!</p>
+    <% } %>
+
+    <!-- Write a Review -->
+    <% if (user && canReview && !hasReviewed) { %>
+      <div class="write-review-form">
+        <h3>Write a Review</h3>
+        <form action="/products/<%= product._id %>/reviews" method="POST">
+          <div class="star-picker">
+            <label>Your Rating:</label>
+            <div class="star-input">
+              <% for(let i=5;i>=1;i--) { %>
+                <input type="radio" name="rating" id="star<%= i %>" value="<%= i %>" <%= i===5?'checked':'' %>/>
+                <label for="star<%= i %>"><i class="fas fa-star"></i></label>
+              <% } %>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Your Review</label>
+            <textarea name="comment" rows="4" placeholder="Share your experience with this product..." required maxlength="500"></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Submit Review</button>
+        </form>
+      </div>
+    <% } else if (user && hasReviewed) { %>
+      <p style="color:var(--text-light);padding:.5rem 0"><i class="fas fa-check-circle" style="color:var(--success)"></i> You have already reviewed this product.</p>
+    <% } else if (!user) { %>
+      <p style="color:var(--text-light)"><a href="/auth/login">Login</a> to write a review (after purchase).</p>
+    <% } else if (user && !canReview) { %>
+      <p style="color:var(--text-light)">Purchase and receive this product to leave a review.</p>
+    <% } %>
+  </section>
+
+  <!-- RELATED PRODUCTS -->
+  <% if (related.length) { %>
+  <section class="related-products">
+    <h2>You Might Also Like</h2>
+    <div class="products-grid">
+      <% related.forEach(p => { %><%- include('../partials/product-card', { product: p }) %><% }) %>
+    </div>
+  </section>
+  <% } %>
+</div>
+
+<script>
+function changeQty(delta) {
+  const input = document.getElementById('qty');
+  input.value = Math.max(1, Math.min(parseInt(input.max), parseInt(input.value) + delta));
+}
+function switchImage(thumb, src) {
+  document.getElementById('mainProductImg').src = src;
+  document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+  thumb.classList.add('active');
+}
+</script>
+
+<%- include('../partials/footer') %>

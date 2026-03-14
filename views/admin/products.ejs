@@ -1,0 +1,49 @@
+<%- include('../partials/header', { title: 'Manage Products' }) %>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-brand"><i class="fas fa-shield-alt"></i> Admin Panel</div>
+    <nav class="admin-nav">
+      <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="/admin/products" class="active"><i class="fas fa-box"></i> Products</a>
+      <a href="/admin/orders"><i class="fas fa-receipt"></i> Orders</a>
+      <a href="/products/admin/new"><i class="fas fa-plus"></i> Add Product</a>
+      <a href="/"><i class="fas fa-store"></i> View Store</a>
+    </nav>
+  </aside>
+  <div class="admin-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h1>Products <span style="font-size:1rem;font-weight:400;color:var(--text-light)">(<%= products.length %>)</span></h1>
+      <a href="/products/admin/new" class="btn-primary"><i class="fas fa-plus"></i> Add Product</a>
+    </div>
+    <div class="admin-section">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Platform</th><th>Price</th><th>Stock</th><th>Rating</th><th>Featured</th><th>Actions</th></tr></thead>
+          <tbody>
+            <% products.forEach(product => { %>
+              <tr>
+                <td><img src="<%= product.image %>" class="table-img" onerror="this.src='/images/placeholder.svg'"/></td>
+                <td><strong><%= product.name %></strong><br/><small style="color:var(--text-light)"><%= product.brand %></small></td>
+                <td><%= product.category %></td>
+                <td><% if (product.platform) { %><span class="platform-badge <%= product.platform==='PlayStation'?'ps':product.platform==='XBOX'?'xbox':'pc' %>" style="position:static;font-size:.75rem"><%= product.platform %></span><% } else { %>—<% } %></td>
+                <td>Rs. <%= product.price.toLocaleString() %></td>
+                <td class="<%= product.stock===0?'text-danger':product.stock<10?'text-warning':'' %>"><%= product.stock %></td>
+                <td>⭐ <%= product.rating.toFixed(1) %></td>
+                <td><%= product.featured?'✅':'—' %></td>
+                <td>
+                  <div class="table-actions">
+                    <a href="/products/admin/edit/<%= product._id %>" class="btn-outline btn-sm">Edit</a>
+                    <form action="/products/admin/<%= product._id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete?')">
+                      <button type="submit" class="btn-danger btn-sm">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

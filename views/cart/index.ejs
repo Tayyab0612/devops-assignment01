@@ -1,0 +1,57 @@
+<%- include('../partials/header', { title: 'Shopping Cart' }) %>
+
+<div class="container">
+  <h1 class="page-title"><i class="fas fa-shopping-cart"></i> Your Cart</h1>
+
+  <% if (!cart || cart.length === 0) { %>
+    <div class="empty-state">
+      <i class="fas fa-shopping-cart"></i>
+      <h3>Your cart is empty</h3>
+      <p>Browse our products and add something you love!</p>
+      <a href="/products" class="btn-primary">Start Shopping</a>
+    </div>
+  <% } else { %>
+    <div class="cart-layout">
+      <div class="cart-items">
+        <% let total = 0; %>
+        <% cart.forEach(item => { %>
+          <% if (!item.product) return; %>
+          <% const subtotal = item.product.price * item.quantity; total += subtotal; %>
+          <div class="cart-item">
+            <img src="<%= item.product.image %>" alt="<%= item.product.name %>" onerror="this.src='/images/placeholder.svg'"/>
+            <div class="cart-item-info">
+              <h3><a href="/products/<%= item.product._id %>"><%= item.product.name %></a></h3>
+              <span class="cart-item-category"><%= item.product.category %></span>
+              <div class="cart-item-price">Rs. <%= item.product.price.toLocaleString() %> each</div>
+            </div>
+            <div class="cart-item-actions">
+              <form action="/cart/update/<%= item.product._id %>" method="POST">
+                <div class="qty-control small">
+                  <button type="button" onclick="this.nextElementSibling.value=Math.max(1,parseInt(this.nextElementSibling.value)-1);this.form.submit()">−</button>
+                  <input type="number" name="quantity" value="<%= item.quantity %>" min="1" max="<%= item.product.stock %>" onchange="this.form.submit()"/>
+                  <button type="button" onclick="this.previousElementSibling.value=Math.min(<%= item.product.stock %>,parseInt(this.previousElementSibling.value)+1);this.form.submit()">+</button>
+                </div>
+              </form>
+              <div class="cart-item-subtotal">Rs. <%= subtotal.toLocaleString() %></div>
+              <form action="/cart/remove/<%= item.product._id %>" method="POST">
+                <button type="submit" class="btn-remove" title="Remove"><i class="fas fa-trash"></i></button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="cart-summary">
+        <h3>Order Summary</h3>
+        <div class="summary-line"><span>Subtotal</span><span>Rs. <%= total.toLocaleString() %></span></div>
+        <div class="summary-line"><span>Shipping</span><span><%= total >= 5000 ? 'FREE' : 'Rs. 299' %></span></div>
+        <% if (total >= 5000) { %><div class="promo-note">🎉 You qualify for free shipping!</div><% } %>
+        <div class="summary-line total"><span>Total</span><span>Rs. <%= (total + (total >= 5000 ? 0 : 5.99)).toLocaleString() %></span></div>
+        <a href="/cart/checkout" class="btn-primary btn-full btn-lg" style="margin-top:1rem">Proceed to Checkout <i class="fas fa-arrow-right"></i></a>
+        <a href="/products" class="btn-outline btn-full" style="margin-top:.75rem">Continue Shopping</a>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

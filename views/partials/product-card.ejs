@@ -1,0 +1,40 @@
+<div class="product-card">
+  <div class="product-image-wrap">
+    <a href="/products/<%= product._id %>">
+      <img src="<%= product.image %>" alt="<%= product.name %>" loading="lazy" onerror="this.src='/images/placeholder.svg'"/>
+    </a>
+    <% if (product.stock === 0) { %>
+      <span class="badge out-of-stock">Out of Stock</span>
+    <% } else if (product.featured) { %>
+      <span class="badge featured">⭐ Featured</span>
+    <% } %>
+    <% if (product.platform) { %>
+      <span class="platform-badge <%= product.platform === 'PlayStation' ? 'ps' : product.platform === 'XBOX' ? 'xbox' : 'pc' %>">
+        <i class="<%= product.platform === 'PC' ? 'fas fa-desktop' : `fab fa-${product.platform === 'PlayStation' ? 'playstation' : 'xbox'}` %>"></i>
+        <%= product.platform %>
+      </span>
+    <% } %>
+  </div>
+  <div class="product-info">
+    <span class="product-category"><%= product.category %></span>
+    <h3 class="product-name"><a href="/products/<%= product._id %>"><%= product.name %></a></h3>
+    <div class="product-rating">
+      <% for(let i = 1; i <= 5; i++) { %><i class="fas fa-star <%= i <= Math.round(product.rating) ? 'filled' : '' %>"></i><% } %>
+      <span>(<%= product.numReviews %>)</span>
+    </div>
+    <div class="product-footer">
+      <span class="product-price">Rs. <%= parseFloat(product.price).toLocaleString() %></span>
+      <% if (product.stock > 0) { %>
+        <% if (user) { %>
+          <form action="/cart/add/<%= product._id %>" method="POST" style="margin:0">
+            <button type="submit" class="btn-add-cart" title="Add to cart"><i class="fas fa-cart-plus"></i></button>
+          </form>
+        <% } else { %>
+          <a href="/auth/login" class="btn-add-cart" title="Login to add to cart"><i class="fas fa-cart-plus"></i></a>
+        <% } %>
+      <% } else { %>
+        <button class="btn-add-cart disabled" disabled title="Out of stock"><i class="fas fa-ban"></i></button>
+      <% } %>
+    </div>
+  </div>
+</div>

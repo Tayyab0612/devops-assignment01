@@ -1,0 +1,131 @@
+<%- include('partials/header') %>
+
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Discover Amazing Products</h1>
+    <p>Shop thousands of items at unbeatable prices</p>
+    <div class="hero-search">
+      <form action="/products" method="GET">
+        <input type="text" name="search" placeholder="What are you looking for?"/>
+        <button type="submit"><i class="fas fa-search"></i> Search</button>
+      </form>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><span><%= totalProducts %>+</span><small>Products</small></div>
+      <div class="hero-stat"><span>10</span><small>Categories</small></div>
+      <div class="hero-stat"><span>24/7</span><small>Support</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- SHOP BY CATEGORY -->
+<section class="section categories-section">
+  <div class="container">
+    <h2 class="section-title">Shop by Category</h2>
+    <div class="categories-grid">
+      <% const catMeta = {
+        'Electronics':  { icon: 'fa-laptop',       color: '#6366f1' },
+        'Clothing':     { icon: 'fa-tshirt',        color: '#ec4899' },
+        'Books':        { icon: 'fa-book',          color: '#f59e0b' },
+        'Home & Garden':{ icon: 'fa-home',          color: '#10b981' },
+        'Sports':       { icon: 'fa-dumbbell',      color: '#3b82f6' },
+        'Beauty':       { icon: 'fa-spa',           color: '#a855f7' },
+        'Toys':         { icon: 'fa-gamepad',       color: '#f97316' },
+        'Automotive':   { icon: 'fa-car',           color: '#6b7280' },
+        'Games':        { icon: 'fa-dice',          color: '#14b8a6' },
+        'Other':        { icon: 'fa-box',           color: '#94a3b8' }
+      }; %>
+      <% Object.entries(catMeta).slice(0,9).forEach(([cat, meta]) => { %>
+        <a href="/products?category=<%= encodeURIComponent(cat) %>" class="category-card" style="--cat-color:<%= meta.color %>">
+          <div class="cat-icon-wrap"><i class="fas <%= meta.icon %>"></i></div>
+          <span><%= cat %></span>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED PRODUCTS -->
+<% if (featured.length) { %>
+<section class="section featured-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">⭐ Featured Products</h2>
+      <a href="/products?sort=rating" class="section-link">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="products-grid">
+      <% featured.forEach(product => { %>
+        <%- include('partials/product-card', { product }) %>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- GAMES SECTION -->
+<section class="section games-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">🎮 Games Store</h2>
+      <a href="/products?category=Games" class="section-link">Browse All <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <!-- Platform Tabs -->
+    <div class="platform-tabs">
+      <a href="/products?category=Games" class="platform-tab">
+        <i class="fas fa-dice"></i> All Games
+      </a>
+      <a href="/products?category=Games&platform=PlayStation" class="platform-tab playstation">
+        <i class="fab fa-playstation"></i> PlayStation
+      </a>
+      <a href="/products?category=Games&platform=XBOX" class="platform-tab xbox">
+        <i class="fab fa-xbox"></i> Xbox
+      </a>
+      <a href="/products?category=Games&platform=PC" class="platform-tab pc">
+        <i class="fas fa-desktop"></i> PC
+      </a>
+    </div>
+
+    <% if (games.length) { %>
+      <div class="products-grid">
+        <% games.forEach(product => { %>
+          <%- include('partials/product-card', { product }) %>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-games">
+        <i class="fas fa-gamepad"></i>
+        <p>No games added yet. <% if (user && user.role === 'admin') { %><a href="/products/admin/new">Add games</a><% } %></p>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<!-- NEW ARRIVALS -->
+<section class="section newest-section" style="background:var(--white);">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">🆕 New Arrivals</h2>
+      <a href="/products?sort=newest" class="section-link">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="products-grid">
+      <% newest.forEach(product => { %>
+        <%- include('partials/product-card', { product }) %>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- PROMO BANNER -->
+<section class="promo-banner">
+  <div class="container">
+    <div class="promo-content">
+      <h2>Free Shipping on Orders Over Rs. 5,000!</h2>
+      <p>Shop from top Pakistani brands at great prices</p>
+      <a href="/products" class="btn-white">Shop Now <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

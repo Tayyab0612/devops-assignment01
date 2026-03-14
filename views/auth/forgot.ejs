@@ -1,0 +1,30 @@
+<%- include('../partials/header', { title: 'Forgot Password' }) %>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-icon-wrap purple">
+        <i class="fas fa-key"></i>
+      </div>
+      <h2>Forgot Password?</h2>
+      <p>Enter your email and we'll send you a reset link</p>
+    </div>
+
+    <form action="/auth/forgot" method="POST" class="auth-form">
+      <div class="form-group">
+        <label><i class="fas fa-envelope"></i> Email Address</label>
+        <input type="email" name="email" placeholder="you@example.com" required autocomplete="email"/>
+      </div>
+      <button type="submit" class="btn-primary btn-full btn-lg">
+        <i class="fas fa-paper-plane"></i> Send Reset Link
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p><a href="/auth/login"><i class="fas fa-arrow-left"></i> Back to Login</a></p>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+

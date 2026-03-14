@@ -1,0 +1,155 @@
+<%- include('../partials/header', { title: 'Shop' }) %>
+
+<section class="shop-section">
+  <div class="container">
+    <div class="shop-layout">
+
+      <!-- SIDEBAR FILTERS -->
+      <aside class="filter-sidebar">
+        <form action="/products" method="GET" id="filterForm">
+          <div class="filter-header">
+            <h3><i class="fas fa-filter"></i> Filters</h3>
+            <a href="/products" class="clear-filters">Clear All</a>
+          </div>
+
+          <!-- Search -->
+          <div class="filter-group">
+            <label>Search</label>
+            <div class="search-input">
+              <input type="text" name="search" placeholder="Search products..." value="<%= filters.search %>"/>
+              <i class="fas fa-search"></i>
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div class="filter-group">
+            <label>Category</label>
+            <select name="category" onchange="togglePlatform(this.value); this.form.submit()">
+              <option value="all" <%= !filters.category || filters.category === 'all' ? 'selected' : '' %>>All Categories</option>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat %>" <%= filters.category === cat ? 'selected' : '' %>><%= cat %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <!-- Platform (Games only) -->
+          <div class="filter-group" id="platformGroup" style="<%= filters.category === 'Games' ? '' : 'display:none' %>">
+            <label><i class="fas fa-gamepad"></i> Platform</label>
+            <div class="platform-pills">
+              <a href="/products?category=Games&sort=<%= filters.sort %>"
+                class="platform-pill <%= !filters.platform || filters.platform === 'all' ? 'active' : '' %>">All</a>
+              <a href="/products?category=Games&platform=PlayStation&sort=<%= filters.sort %>"
+                class="platform-pill ps <%= filters.platform === 'PlayStation' ? 'active' : '' %>">
+                <i class="fab fa-playstation"></i> PS
+              </a>
+              <a href="/products?category=Games&platform=XBOX&sort=<%= filters.sort %>"
+                class="platform-pill xbox <%= filters.platform === 'XBOX' ? 'active' : '' %>">
+                <i class="fab fa-xbox"></i> Xbox
+              </a>
+              <a href="/products?category=Games&platform=PC&sort=<%= filters.sort %>"
+                class="platform-pill pc <%= filters.platform === 'PC' ? 'active' : '' %>">
+                <i class="fas fa-desktop"></i> PC
+              </a>
+            </div>
+            <input type="hidden" name="platform" value="<%= filters.platform || '' %>"/>
+          </div>
+
+          <!-- Price Range -->
+          <div class="filter-group">
+            <label>Price Range ($)</label>
+            <div class="price-inputs">
+              <input type="number" name="minPrice" placeholder="Min" value="<%= filters.minPrice %>" min="0" step="0.01"/>
+              <span>–</span>
+              <input type="number" name="maxPrice" placeholder="Max" value="<%= filters.maxPrice %>" min="0" step="0.01"/>
+            </div>
+          </div>
+
+          <!-- Sort -->
+          <div class="filter-group">
+            <label>Sort By</label>
+            <select name="sort">
+              <option value="newest"     <%= filters.sort === 'newest'     ? 'selected' : '' %>>Newest First</option>
+              <option value="price-asc"  <%= filters.sort === 'price-asc'  ? 'selected' : '' %>>Price: Low to High</option>
+              <option value="price-desc" <%= filters.sort === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+              <option value="rating"     <%= filters.sort === 'rating'     ? 'selected' : '' %>>Top Rated</option>
+              <option value="name"       <%= filters.sort === 'name'       ? 'selected' : '' %>>Name A–Z</option>
+            </select>
+          </div>
+
+          <!-- Brand -->
+          <div class="filter-group">
+            <label>Brand</label>
+            <input type="text" name="brand" placeholder="e.g. Sony, Nike…" value="<%= filters.brand %>"/>
+          </div>
+
+          <button type="submit" class="btn-primary btn-full">
+            <i class="fas fa-search"></i> Apply Filters
+          </button>
+        </form>
+      </aside>
+
+      <!-- PRODUCTS MAIN -->
+      <div class="products-main">
+        <div class="products-header">
+          <div class="results-info">
+            <% if (filters.search) { %>
+              <h2>Results for "<%= filters.search %>"</h2>
+            <% } else if (filters.category && filters.category !== 'all') { %>
+              <h2><%= filters.category %><% if (filters.platform) { %> — <span style="color:var(--primary)"><%= filters.platform %></span><% } %></h2>
+            <% } else { %>
+              <h2>All Products</h2>
+            <% } %>
+            <span><%= totalProducts %> product<%= totalProducts !== 1 ? 's' : '' %> found</span>
+          </div>
+          <div class="view-toggle">
+            <button class="view-btn active" data-view="grid" title="Grid view"><i class="fas fa-th"></i></button>
+            <button class="view-btn" data-view="list" title="List view"><i class="fas fa-list"></i></button>
+          </div>
+        </div>
+
+        <% if (products.length === 0) { %>
+          <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>No products found</h3>
+            <p>Try adjusting your search or filters</p>
+            <a href="/products" class="btn-primary">Browse All Products</a>
+          </div>
+        <% } else { %>
+          <div class="products-grid" id="productsGrid">
+            <% products.forEach(product => { %>
+              <%- include('../partials/product-card', { product }) %>
+            <% }) %>
+          </div>
+
+          <!-- PAGINATION -->
+          <% if (totalPages > 1) { %>
+          <div class="pagination">
+            <% if (currentPage > 1) { %>
+              <a href="?page=<%= currentPage-1 %>&search=<%= filters.search %>&category=<%= filters.category %>&platform=<%= filters.platform %>&sort=<%= filters.sort %>&minPrice=<%= filters.minPrice %>&maxPrice=<%= filters.maxPrice %>&brand=<%= filters.brand %>" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+            <% } %>
+            <% for(let i = 1; i <= totalPages; i++) { %>
+              <a href="?page=<%= i %>&search=<%= filters.search %>&category=<%= filters.category %>&platform=<%= filters.platform %>&sort=<%= filters.sort %>&minPrice=<%= filters.minPrice %>&maxPrice=<%= filters.maxPrice %>&brand=<%= filters.brand %>"
+                class="page-btn <%= currentPage === i ? 'active' : '' %>"><%= i %></a>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%= currentPage+1 %>&search=<%= filters.search %>&category=<%= filters.category %>&platform=<%= filters.platform %>&sort=<%= filters.sort %>&minPrice=<%= filters.minPrice %>&maxPrice=<%= filters.maxPrice %>&brand=<%= filters.brand %>" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+            <% } %>
+          </div>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+function togglePlatform(val) {
+  document.getElementById('platformGroup').style.display = val === 'Games' ? '' : 'none';
+}
+// Auto-submit sort on change
+document.querySelector('select[name="sort"]')?.addEventListener('change', function() {
+  document.getElementById('filterForm').submit();
+});
+</script>
+
+<%- include('../partials/footer') %>

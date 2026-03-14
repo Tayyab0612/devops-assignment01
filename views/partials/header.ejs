@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= typeof title !== 'undefined' ? title + ' | ShopZone' : 'ShopZone — Your One-Stop Shop' %></title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="/" class="logo"><i class="fas fa-shopping-bag"></i> ShopZone</a>
+
+    <form class="nav-search" action="/products" method="GET">
+      <input type="text" name="search" placeholder="Search products…" value="<%= typeof filters !== 'undefined' && filters.search ? filters.search : '' %>"/>
+      <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
+
+    <div class="nav-links">
+      <a href="/products"><i class="fas fa-store"></i> Shop</a>
+      <a href="/products?category=Games" class="nav-games"><i class="fas fa-dice"></i> Games</a>
+
+      <% if (user) { %>
+        <a href="/cart" class="cart-icon">
+          <i class="fas fa-shopping-cart"></i>
+          <% if (cartCount > 0) { %><span class="cart-badge"><%= cartCount %></span><% } %>
+        </a>
+        <div class="dropdown">
+          <button class="dropdown-btn">
+            <% if (user.avatar) { %>
+              <img src="<%= user.avatar %>" class="nav-avatar" alt="<%= user.name %>"/>
+            <% } else { %>
+              <i class="fas fa-user-circle"></i>
+            <% } %>
+            <%= user.name.split(' ')[0] %> <i class="fas fa-chevron-down" style="font-size:.7rem"></i>
+          </button>
+          <div class="dropdown-menu">
+            <a href="/profile"><i class="fas fa-user-edit"></i> My Profile</a>
+            <a href="/profile/orders"><i class="fas fa-box"></i> My Orders</a>
+            <a href="/profile/addresses"><i class="fas fa-map-marker-alt"></i> Addresses</a>
+            <% if (user.role === 'admin') { %>
+              <a href="/admin/dashboard"><i class="fas fa-cog"></i> Admin Panel</a>
+            <% } %>
+            <hr style="margin:.4rem 0;border:none;border-top:1px solid var(--border)"/>
+            <a href="/auth/logout" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </div>
+        </div>
+      <% } else { %>
+        <a href="/auth/login" class="btn-outline">Login</a>
+        <a href="/auth/register" class="btn-primary">Register</a>
+      <% } %>
+    </div>
+  </div>
+</nav>
+
+<% if (messages.success && messages.success.length) { %>
+  <div class="flash success"><i class="fas fa-check-circle"></i> <%= messages.success[0] %></div>
+<% } %>
+<% if (messages.error && messages.error.length) { %>
+  <div class="flash error"><i class="fas fa-exclamation-circle"></i> <%= messages.error[0] %></div>
+<% } %>
+
+<main class="main-content">
